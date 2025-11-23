@@ -8,6 +8,7 @@ import ru.avantys.sportClubAttendance.model.Membership;
 import ru.avantys.sportClubAttendance.model.MembershipType;
 import ru.avantys.sportClubAttendance.repository.MembershipRepository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -59,5 +60,16 @@ public class MembershipService {
     @Transactional(readOnly = true)
     public long getActiveMembershipsCount() {
         return membershipRepository.countActiveMemberships();
+    }
+
+    @Transactional(readOnly = true)
+    public boolean isActiveMembership(UUID id) {
+        Membership membership = getMembershipById(id).orElse(null);
+        if (membership == null) return false;
+
+        if (!clientService.isActiveClient(membership.getClient().getId())) return false;
+
+        LocalDateTime now = LocalDateTime.now();
+        return !now.isBefore(membership.getStartDate()) && !now.isAfter(membership.getEndDate());
     }
 }

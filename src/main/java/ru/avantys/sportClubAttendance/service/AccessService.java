@@ -3,12 +3,13 @@ package ru.avantys.sportClubAttendance.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.avantys.sportClubAttendance.dto.AccessRuleDto;
-import ru.avantys.sportClubAttendance.dto.MembershipDto;
 import ru.avantys.sportClubAttendance.model.AccessRule;
 import ru.avantys.sportClubAttendance.model.Membership;
 import ru.avantys.sportClubAttendance.repository.AccessRuleRepository;
 
+import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
@@ -41,5 +42,31 @@ public class AccessService {
             throw new IllegalArgumentException("AccessRule not found with id: " + id);
         }
         accessRuleRepository.deleteById(id);
+    }
+
+    @Transactional(readOnly = true)
+    public boolean checkAccessRule(UUID membershipId, String zone) {
+        List<AccessRule> accessRuleList = getAccessRulesByMembership(membershipId);
+
+        if (!membershipService.isActiveMembership(membershipId)) return false;
+
+        AccessRule accessRule = accessRuleList.stream()
+                .filter(this::isAccessRuleValid)
+                .max(Comparator.comparing(AccessRule::getPriority))
+                .orElse(null);
+
+        return accessRule != null && accessRule.getZones().contains(zone);
+    }
+
+    private boolean isAccessRuleValid(AccessRule accessRule) {
+        LocalTime currentTime = LocalTime.now();
+        if (currentTime.isBefore(accessRule.getValidFromTime()) ||
+                currentTime.isAfter(accessRule.getValidToTime())) {
+            return false;
+        }
+
+        String currentDayValue = String.valueOf(LocalDate.now().getDayOfWeek().getValue());
+        String allowedDays = accessRule.getAllowedDays();
+        return allowedDays.contains(currentDayValue);
     }
 }

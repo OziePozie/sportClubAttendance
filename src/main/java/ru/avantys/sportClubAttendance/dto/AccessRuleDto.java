@@ -19,7 +19,7 @@ public record AccessRuleDto(
         return new AccessRuleDto(
                 accessRule.getId(),
                 accessRule.getMembership().getId(),
-                accessRule.getZone(),
+                accessRule.getZones(),
                 accessRule.getValidFromTime(),
                 accessRule.getValidToTime(),
                 accessRule.getAllowedDays(),
@@ -31,7 +31,7 @@ public record AccessRuleDto(
         var accessRule = new AccessRule();
         accessRule.setId(accessRuleDto.id());
         accessRule.setMembership(membership);
-        accessRule.setZone(accessRuleDto.zone());
+        accessRule.setZones(accessRuleDto.zone());
         accessRule.setValidFromTime(accessRuleDto.validFromTime());
         accessRule.setValidToTime(accessRuleDto.validToTime());
         accessRule.setAllowedDays(accessRuleDto.allowedDays());

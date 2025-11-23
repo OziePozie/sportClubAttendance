@@ -16,8 +16,8 @@ public class AccessRule {
     @JoinColumn(name = "membership_id", nullable = false)
     private Membership membership;
 
-    @Column(name = "zone", nullable = false)
-    private String zone;
+    @Column(name = "zones", nullable = false)
+    private String zones;
 
     @Column(name = "valid_from_time", nullable = false)
     private LocalTime validFromTime;
@@ -33,10 +33,10 @@ public class AccessRule {
 
     public AccessRule() {}
 
-    public AccessRule(Membership membership, String zone, LocalTime validFromTime,
+    public AccessRule(Membership membership, String zones, LocalTime validFromTime,
                       LocalTime validToTime, String allowedDays, Integer priority) {
         this.membership = membership;
-        this.zone = zone;
+        this.zones = zones;
         this.validFromTime = validFromTime;
         this.validToTime = validToTime;
         this.allowedDays = allowedDays;
@@ -49,8 +49,8 @@ public class AccessRule {
     public Membership getMembership() { return membership; }
     public void setMembership(Membership membership) { this.membership = membership; }
 
-    public String getZone() { return zone; }
-    public void setZone(String zone) { this.zone = zone; }
+    public String getZones() { return zones; }
+    public void setZones(String zone) { this.zones = zone; }
 
     public LocalTime getValidFromTime() { return validFromTime; }
     public void setValidFromTime(LocalTime validFromTime) { this.validFromTime = validFromTime; }

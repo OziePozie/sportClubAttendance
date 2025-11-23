@@ -70,4 +70,10 @@ public class ClientService {
         return clientRepository.count();
     }
 
+    @Transactional(readOnly = true)
+    public boolean isActiveClient(UUID id) {
+        Client client = clientRepository.findById(id).orElse(null);
+        return client != null && !client.getIsBlocked();
+    }
+
 }
