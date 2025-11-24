@@ -21,7 +21,6 @@ public record ClientDto(
 
     public static Client toClient(ClientDto clientDto) {
         var client = new Client();
-        client.setId(clientDto.id);
         client.setFullName(clientDto.fullName);
         client.setEmail(clientDto.email);
         client.setIsBlocked(clientDto.isBlocked);

@@ -24,6 +24,7 @@ public class ClientService {
             throw new IllegalArgumentException("Client with email " + clientDto.email() + " already exists");
         }
         Client client = ClientDto.toClient(clientDto);
+        client.setIsBlocked(false);
         return clientRepository.save(client);
     }
 

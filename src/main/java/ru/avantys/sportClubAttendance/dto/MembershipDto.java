@@ -1,5 +1,6 @@
 package ru.avantys.sportClubAttendance.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import ru.avantys.sportClubAttendance.model.Client;
 import ru.avantys.sportClubAttendance.model.Membership;
 import ru.avantys.sportClubAttendance.model.MembershipType;
@@ -12,7 +13,9 @@ public record MembershipDto(
         UUID clientId,
         String clientName,
         MembershipType type,
+        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
         LocalDateTime startDate,
+        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
         LocalDateTime endDate,
         Integer remainingVisits
 ) {
@@ -30,7 +33,6 @@ public record MembershipDto(
 
     public static Membership toMembership(MembershipDto membershipDto, Client client) {
         var membership = new Membership();
-        membership.setId(membershipDto.id);
         membership.setClient(client);
         membership.setType(membershipDto.type);
         membership.setStartDate(membershipDto.startDate);

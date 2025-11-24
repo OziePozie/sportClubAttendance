@@ -1,5 +1,6 @@
 package ru.avantys.sportClubAttendance.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import ru.avantys.sportClubAttendance.model.AccessRule;
 import ru.avantys.sportClubAttendance.model.Membership;
 
@@ -10,7 +11,9 @@ public record AccessRuleDto(
         UUID id,
         UUID membershipId,
         String zone,
+        @JsonFormat(pattern = "HH:mm:ss")
         LocalTime validFromTime,
+        @JsonFormat(pattern = "HH:mm:ss")
         LocalTime validToTime,
         String allowedDays,
         Integer priority
@@ -29,7 +32,6 @@ public record AccessRuleDto(
 
     public static AccessRule toAccessRule(AccessRuleDto accessRuleDto, Membership membership) {
         var accessRule = new AccessRule();
-        accessRule.setId(accessRuleDto.id());
         accessRule.setMembership(membership);
         accessRule.setZones(accessRuleDto.zone());
         accessRule.setValidFromTime(accessRuleDto.validFromTime());
