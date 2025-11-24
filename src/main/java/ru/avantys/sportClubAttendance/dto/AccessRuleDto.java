@@ -5,12 +5,13 @@ import ru.avantys.sportClubAttendance.model.AccessRule;
 import ru.avantys.sportClubAttendance.model.Membership;
 
 import java.time.LocalTime;
+import java.util.Set;
 import java.util.UUID;
 
 public record AccessRuleDto(
         UUID id,
         UUID membershipId,
-        String zone,
+        Set<String> zones,
         @JsonFormat(pattern = "HH:mm:ss")
         LocalTime validFromTime,
         @JsonFormat(pattern = "HH:mm:ss")
@@ -33,7 +34,7 @@ public record AccessRuleDto(
     public static AccessRule toAccessRule(AccessRuleDto accessRuleDto, Membership membership) {
         var accessRule = new AccessRule();
         accessRule.setMembership(membership);
-        accessRule.setZones(accessRuleDto.zone());
+        accessRule.setZones(accessRuleDto.zones());
         accessRule.setValidFromTime(accessRuleDto.validFromTime());
         accessRule.setValidToTime(accessRuleDto.validToTime());
         accessRule.setAllowedDays(accessRuleDto.allowedDays());

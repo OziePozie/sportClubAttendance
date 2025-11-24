@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.LocalTime;
 import java.util.UUID;
+import java.util.Set;
 
 @Entity
 @Table(name = "access_rule")
@@ -19,7 +20,7 @@ public class AccessRule {
     private Membership membership;
 
     @Column(name = "zones", nullable = false)
-    private String zones;
+    private Set<String> zones;
 
     @Column(name = "valid_from_time", nullable = false)
     private LocalTime validFromTime;
@@ -35,7 +36,7 @@ public class AccessRule {
 
     public AccessRule() {}
 
-    public AccessRule(Membership membership, String zones, LocalTime validFromTime,
+    public AccessRule(Membership membership, Set<String> zones, LocalTime validFromTime,
                       LocalTime validToTime, String allowedDays, Integer priority) {
         this.membership = membership;
         this.zones = zones;
@@ -51,8 +52,12 @@ public class AccessRule {
     public Membership getMembership() { return membership; }
     public void setMembership(Membership membership) { this.membership = membership; }
 
-    public String getZones() { return zones; }
-    public void setZones(String zone) { this.zones = zone; }
+    public void setZones(Set<String> zones) {
+        this.zones = zones;
+    }
+    public Set<String> getZones() {
+        return zones;
+    }
 
     public LocalTime getValidFromTime() { return validFromTime; }
     public void setValidFromTime(LocalTime validFromTime) { this.validFromTime = validFromTime; }
