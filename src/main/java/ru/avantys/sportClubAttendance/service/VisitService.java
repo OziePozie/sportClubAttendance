@@ -17,9 +17,9 @@ public class VisitService {
     private final VisitRepository visitRepository;
     private final MembershipService membershipService;
 
-    public VisitService(VisitRepository visitRepository, MembershipService membershipRepository) {
+    public VisitService(VisitRepository visitRepository, MembershipService membershipService) {
         this.visitRepository = visitRepository;
-        this.membershipService = membershipRepository;
+        this.membershipService = membershipService;
     }
 
     public Visit createVisit(UUID membershipId, String zone) {
@@ -51,12 +51,13 @@ public class VisitService {
         return visitRepository.findLastVisitByMembershipId(membershipId);
     }
 
-    public void recordExit(UUID membershipId) {
+    public Visit recordExit(UUID membershipId) {
         Visit lastVisit = visitRepository.findLastVisitByMembershipId(membershipId).orElse(null);
-        if (lastVisit == null) return;
+        if (lastVisit == null) return null;
 
         lastVisit.setExitTime(LocalDateTime.now());
         visitRepository.save(lastVisit);
+        return lastVisit;
     }
 
     private void closeOldVisit(Visit visit) {
