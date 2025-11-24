@@ -3,6 +3,7 @@ package ru.avantys.sportClubAttendance.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.avantys.sportClubAttendance.dto.ClientDto;
+import ru.avantys.sportClubAttendance.exception.ClientAlreadyExistsException;
 import ru.avantys.sportClubAttendance.model.Client;
 import ru.avantys.sportClubAttendance.repository.ClientRepository;
 
@@ -21,7 +22,7 @@ public class ClientService {
 
     public Client createClient(ClientDto clientDto) {
         if (clientRepository.existsByEmail(clientDto.email())) {
-            throw new IllegalArgumentException("Client with email " + clientDto.email() + " already exists");
+            throw new ClientAlreadyExistsException("Client with email " + clientDto.email() + " already exists");
         }
         Client client = ClientDto.toClient(clientDto);
         client.setIsBlocked(false);
@@ -52,7 +53,7 @@ public class ClientService {
         Client client = clientRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Client not found with id: " + id));
         if (clientDto.email() != null && !client.getEmail().equals(clientDto.email()) && clientRepository.existsByEmail(clientDto.email())) {
-            throw new IllegalArgumentException("Email " + clientDto.email() + " is already taken");
+            throw new ClientAlreadyExistsException("Email " + clientDto.email() + " is already taken");
         }
         if (clientDto.fullName() != null) client.setFullName(clientDto.fullName());
         if (clientDto.email() != null) client.setEmail(clientDto.email());

@@ -3,6 +3,8 @@ package ru.avantys.sportClubAttendance.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.avantys.sportClubAttendance.dto.AccessRuleDto;
+import ru.avantys.sportClubAttendance.exception.AccessRuleNotFoundException;
+import ru.avantys.sportClubAttendance.exception.MembershipNotFoundException;
 import ru.avantys.sportClubAttendance.model.AccessRule;
 import ru.avantys.sportClubAttendance.model.Membership;
 import ru.avantys.sportClubAttendance.repository.AccessRuleRepository;
@@ -26,7 +28,7 @@ public class AccessService {
 
     public AccessRule createAccessRule(AccessRuleDto accessRuleDto, UUID membershipId) {
         Membership membership = membershipService.getMembershipById(membershipId)
-                .orElseThrow(() -> new IllegalArgumentException("Membership not found with id: " + membershipId));
+                .orElseThrow(() -> new MembershipNotFoundException("Membership not found with id: " + membershipId));
 
         AccessRule accessRule = AccessRuleDto.toAccessRule(accessRuleDto, membership);
         return accessRuleRepository.save(accessRule);
@@ -39,7 +41,7 @@ public class AccessService {
 
     public void deleteAccessRule(UUID id) {
         if (!accessRuleRepository.existsById(id)) {
-            throw new IllegalArgumentException("AccessRule not found with id: " + id);
+            throw new AccessRuleNotFoundException("AccessRule not found with id: " + id);
         }
         accessRuleRepository.deleteById(id);
     }

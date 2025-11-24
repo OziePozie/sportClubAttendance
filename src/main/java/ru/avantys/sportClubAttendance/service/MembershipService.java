@@ -3,6 +3,7 @@ package ru.avantys.sportClubAttendance.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.avantys.sportClubAttendance.dto.MembershipDto;
+import ru.avantys.sportClubAttendance.exception.ClientNotFoundException;
 import ru.avantys.sportClubAttendance.model.Client;
 import ru.avantys.sportClubAttendance.model.Membership;
 import ru.avantys.sportClubAttendance.model.MembershipType;
@@ -26,7 +27,7 @@ public class MembershipService {
 
     public Membership createMembership(MembershipDto membershipDto) {
         Client client = clientService.getClientById(membershipDto.clientId())
-                .orElseThrow(() -> new IllegalArgumentException("Client not found with id: " + membershipDto.clientId()));
+                .orElseThrow(() -> new ClientNotFoundException("Client not found with id: " + membershipDto.clientId()));
 
         Membership membership = MembershipDto.toMembership(membershipDto, client);
         return membershipRepository.save(membership);

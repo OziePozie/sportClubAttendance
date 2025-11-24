@@ -2,6 +2,7 @@ package ru.avantys.sportClubAttendance.service;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.avantys.sportClubAttendance.exception.MembershipNotFoundException;
 import ru.avantys.sportClubAttendance.model.Membership;
 import ru.avantys.sportClubAttendance.model.Visit;
 import ru.avantys.sportClubAttendance.repository.VisitRepository;
@@ -24,7 +25,7 @@ public class VisitService {
 
     public Visit createVisit(UUID membershipId, String zone) {
         Membership membership = membershipService.getMembershipById(membershipId)
-                .orElseThrow(() -> new IllegalArgumentException("Membership not found with id: " + membershipId));
+                .orElseThrow(() -> new MembershipNotFoundException("Membership not found with id: " + membershipId));
         Visit oldVisit = visitRepository.findLastVisitByMembershipId(membershipId).orElse(null);
         closeOldVisit(oldVisit);
 
