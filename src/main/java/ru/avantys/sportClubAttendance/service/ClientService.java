@@ -50,11 +50,11 @@ public class ClientService {
     public Client updateClient(UUID id, ClientDto clientDto) {
         Client client = clientRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Client not found with id: " + id));
-        if (!client.getEmail().equals(clientDto.email()) && clientRepository.existsByEmail(clientDto.email())) {
+        if (clientDto.email() != null && !client.getEmail().equals(clientDto.email()) && clientRepository.existsByEmail(clientDto.email())) {
             throw new IllegalArgumentException("Email " + clientDto.email() + " is already taken");
         }
-        client.setFullName(clientDto.fullName());
-        client.setEmail(clientDto.email());
+        if (clientDto.fullName() != null) client.setFullName(clientDto.fullName());
+        if (clientDto.email() != null) client.setEmail(clientDto.email());
         return clientRepository.save(client);
     }
 
