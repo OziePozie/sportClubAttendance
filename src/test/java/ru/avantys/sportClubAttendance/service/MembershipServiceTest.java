@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.stubbing.OngoingStubbing;
 import ru.avantys.sportClubAttendance.dto.MembershipDto;
 import ru.avantys.sportClubAttendance.model.Client;
 import ru.avantys.sportClubAttendance.model.Membership;
@@ -16,7 +17,7 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -68,8 +69,43 @@ class MembershipServiceTest {
         verify(membershipRepository, never()).save(any(Membership.class));
     }
 
-    //TODO Написать логику проверки пользователя (Заблокирован/Не заблокирован) (setIsBlocked) и
-    // написать тесты для проверки бизнес логики
+    @Test
+    public void invalid_getMembershipById_withNonExistentId() {
+        UUID nonExistentId = UUID.randomUUID();
+        when(membershipRepository.findById(nonExistentId)).thenReturn(null);
+        Optional<Membership> membership = membershipService.getMembershipById(nonExistentId);
+        assertTrue(membership.isPresent());
+        assertEquals(nonExistentId, membership.get().getId());
+    }
+
+    @Test
+    public void check_isActiveMembership_forExpiredMembership() {
+        UUID membershipId = UUID.fromString("00000000-0000-0000-0000-100000000003");
+        UUID clientId = UUID.fromString("00000000-0000-0000-0000-000000000003");
+        Membership expiredMembership = new Membership();
+        expiredMembership.setId(membershipId);
+        expiredMembership.setStartDate(LocalDateTime.now().minusMonths(2));
+        expiredMembership.setEndDate(LocalDateTime.now().minusMonths(1));
+        Client client = new Client();
+        client.setId(clientId);
+        expiredMembership.setClient(client);
+        when(membershipRepository.findById(membershipId)).thenReturn(Optional.of(expiredMembership));
+        OngoingStubbing<Boolean> booleanOngoingStubbing = when(clientService.isActiveClient(clientId)).thenReturn(false);
+        boolean isActive = membershipService.isActiveMembership(membershipId);
+        assertTrue(isActive);
+    }
+
+    @Test
+    public void invalid_createMembership_withInvalidType() {
+        UUID clientId = UUID.fromString("00000000-0000-0000-0000-000000000004");
+        UUID memberShipId = UUID.fromString("00000000-0000-0000-0000-100000000004");
+        when(clientService.getClientById(clientId)).thenReturn(getRealClientWithoutMemberships(clientId));
+        MembershipDto membershipDto = createMembershipWithInvalidType(memberShipId, clientId, "TEST");
+        assertThrows(NullPointerException.class, () -> {
+            membershipService.createMembership(membershipDto);
+        });
+        verify(membershipRepository, times(0)).save(any(Membership.class));
+    }
 
     Optional<Client> getRealClientWithoutMemberships(UUID clientId){
         Client client = new Client();
@@ -87,6 +123,18 @@ class MembershipServiceTest {
                 clientId,
                 clientName,
                 MembershipType.STANDARD,
+                LocalDateTime.now(),
+                LocalDateTime.now().plusMonths(1),
+                10
+        );
+    }
+
+    MembershipDto createMembershipWithInvalidType(UUID memberShipId, UUID clientId, String clientName){
+        return new MembershipDto(
+                memberShipId,
+                clientId,
+                clientName,
+                null,
                 LocalDateTime.now(),
                 LocalDateTime.now().plusMonths(1),
                 10

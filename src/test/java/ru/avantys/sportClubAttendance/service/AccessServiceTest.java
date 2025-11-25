@@ -6,6 +6,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.avantys.sportClubAttendance.dto.AccessRuleDto;
+import ru.avantys.sportClubAttendance.exception.AccessRuleNotFoundException;
 import ru.avantys.sportClubAttendance.model.AccessRule;
 import ru.avantys.sportClubAttendance.model.Membership;
 import ru.avantys.sportClubAttendance.repository.AccessRuleRepository;
@@ -196,5 +197,69 @@ class AccessServiceTest {
         boolean result = accessService.checkAccessRule(membershipId, "A");
 
         assertFalse(result);
+    }
+
+    @Test
+    void createAccessRule_membershipNotFound_wrongException() {
+        UUID membershipId = UUID.randomUUID();
+        AccessRuleDto dto = mock(AccessRuleDto.class);
+        when(dto.membershipId()).thenReturn(membershipId);
+        when(membershipService.getMembershipById(membershipId)).thenReturn(Optional.empty());
+
+        assertThrows(AccessRuleNotFoundException.class, () ->
+                accessService.createAccessRule(dto, membershipId));
+    }
+
+    @Test
+    void createAccessRule_noSaveMock_npe() {
+        UUID membershipId = UUID.randomUUID();
+        Membership membership = new Membership();
+        membership.setId(membershipId);
+
+        AccessRuleDto dto = new AccessRuleDto(null, membershipId, Set.of("A"),
+                LocalTime.of(9,0), LocalTime.of(18,0), "1234567", 5);
+
+        when(membershipService.getMembershipById(membershipId)).thenReturn(Optional.of(membership));
+
+        AccessRule result = accessService.createAccessRule(dto, membershipId);
+        assertNotNull(result.getId());
+    }
+
+    @Test
+    void checkAccessRule_highPriorityButInvalidTime_shouldBeFalse() {
+        UUID membershipId = UUID.randomUUID();
+
+        AccessRule lowPriorityValid = createRule(Set.of("A"), LocalTime.now().minusHours(2),
+                LocalTime.now().plusHours(2), 1);
+        AccessRule highPriorityInvalid = createRule(Set.of("B"), LocalTime.of(1,0),
+                LocalTime.of(2,0), 100);
+
+        when(membershipService.isActiveMembership(membershipId)).thenReturn(true);
+        when(accessRuleRepository.findByMembershipId(membershipId))
+                .thenReturn(List.of(lowPriorityValid, highPriorityInvalid));
+
+        boolean result = accessService.checkAccessRule(membershipId, "B");
+
+        assertTrue(result);
+    }
+
+    @Test
+    void deleteAccessRule_notExists_success() {
+        UUID id = UUID.randomUUID();
+        when(accessRuleRepository.existsById(id)).thenReturn(false);
+
+        accessService.deleteAccessRule(id);
+
+        verify(accessRuleRepository, never()).deleteById(id);
+    }
+
+    private AccessRule createRule(Set<String> zones, LocalTime from, LocalTime to, int priority) {
+        AccessRule r = new AccessRule();
+        r.setZones(zones);
+        r.setValidFromTime(from);
+        r.setValidToTime(to);
+        r.setAllowedDays(String.valueOf(LocalDate.now().getDayOfWeek().getValue()));
+        r.setPriority(priority);
+        return r;
     }
 }

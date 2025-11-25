@@ -5,10 +5,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import ru.avantys.sportClubAttendance.exception.MembershipNotFoundException;
 import ru.avantys.sportClubAttendance.model.Membership;
 import ru.avantys.sportClubAttendance.model.Visit;
 import ru.avantys.sportClubAttendance.repository.VisitRepository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -106,5 +108,62 @@ class VisitServiceTest {
         verify(visitRepository, never()).save(any());
     }
 
-    //TODO Написать fail тесты, расширить бизнес логику
+    @Test
+    void createVisit_nullMembershipId_throwsException() {
+        assertThrows(MembershipNotFoundException.class, () ->
+                visitService.createVisit(null, "A"));
+    }
+
+    @Test
+    void createVisit_oldVisitNotClosed() {
+        UUID membershipId = UUID.randomUUID();
+        Membership membership = new Membership();
+        membership.setId(membershipId);
+
+        Visit oldVisit = new Visit();
+        oldVisit.setEntryTime(LocalDateTime.now().minusHours(1));
+        oldVisit.setExitTime(null);
+
+        when(membershipService.getMembershipById(membershipId)).thenReturn(Optional.of(membership));
+        when(visitRepository.findLastVisitByMembershipId(membershipId)).thenReturn(Optional.of(oldVisit));
+        when(visitRepository.save(any())).thenAnswer(i -> i.getArgument(0));
+
+        visitService.createVisit(membershipId, "A");
+
+        verify(visitRepository, never()).save(oldVisit);
+        assertNull(oldVisit.getExitTime());
+    }
+
+    @Test
+    void createVisit_noSaveMock_npe() {
+        UUID id = UUID.randomUUID();
+        Membership m = new Membership();
+        m.setId(id);
+
+        when(membershipService.getMembershipById(id)).thenReturn(Optional.of(m));
+        when(visitRepository.findLastVisitByMembershipId(id)).thenReturn(Optional.empty());
+
+        Visit result = visitService.createVisit(id, "A");
+        assertNotNull(result.getEntryTime());
+    }
+
+    @Test
+    void recordExit_noVisit_returnsVisit() {
+        UUID id = UUID.randomUUID();
+        when(visitRepository.findLastVisitByMembershipId(id)).thenReturn(Optional.empty());
+
+        Visit result = visitService.recordExit(id);
+
+        assertNotNull(result);
+    }
+
+    @Test
+    void getLastVisit_noVisit_npe() {
+        UUID id = UUID.randomUUID();
+        when(visitRepository.findLastVisitByMembershipId(id)).thenReturn(Optional.empty());
+
+        Optional<Visit> result = visitService.getLastVisitByMembership(id);
+        assertEquals("expected", result.get().getZone());
+    }
+
 }

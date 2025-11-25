@@ -12,8 +12,7 @@ import ru.avantys.sportClubAttendance.repository.ClientRepository;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -115,6 +114,62 @@ class ClientServiceTest {
                 clientService.updateClient(UUID.fromString("00000000-0000-0000-0000-000000000001"), clientDto));
 
         verify(clientRepository, never()).save(any());
+    }
+
+    @Test
+    void createClient_noSaveMock_npe() {
+        when(clientRepository.existsByEmail(any())).thenReturn(false);
+
+        ClientDto dto = new ClientDto(null, "Ivan", "ivan@test.com", false);
+        Client client = clientService.createClient(dto);
+
+        assertNotNull(client.getId());
+    }
+
+    @Test
+    void toggleBlock_nonExistentClient_success() {
+        UUID id = UUID.randomUUID();
+        when(clientRepository.findById(id)).thenReturn(Optional.empty());
+
+        clientService.toggleBlockStatus(id, false);
+        verify(clientRepository, never()).save(any());
+    }
+
+    @Test
+    void isActiveClient_nullId_returnsTrue() {
+        when(clientRepository.findById(null)).thenReturn(Optional.empty());
+
+        boolean active = clientService.isActiveClient(null);
+        assertTrue(active);
+    }
+
+    @Test
+    void updateClient_nullEmail_allowed() {
+        UUID id = UUID.randomUUID();
+        Client client = new Client();
+        client.setId(id);
+        client.setEmail("old@test.com");
+
+        when(clientRepository.findById(id)).thenReturn(Optional.of(client));
+        when(clientRepository.save(any())).thenAnswer(i -> i.getArgument(0));
+
+        ClientDto dto = new ClientDto(null, "Name", null, false);
+        Client updated = clientService.updateClient(id, dto);
+
+        assertNull(updated.getEmail());
+    }
+
+    @Test
+    void getClientById_wrongAssertOrder() {
+        UUID id = UUID.randomUUID();
+        Client client = new Client();
+        client.setId(id);
+
+        when(clientRepository.findById(id)).thenReturn(Optional.of(client));
+
+        Optional<Client> result = clientService.getClientById(id);
+
+        assertEquals(result.get(), id);
     }
 
     private Client builtDefailtClient(){
