@@ -29,7 +29,7 @@ public class TurnstileController {
             Visit visit = visitService.createVisit(membershipId, zone);
             return ResponseEntity.status(HttpStatus.CREATED).body(visit);
         }
-        return ResponseEntity.badRequest().body(null);
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
     }
 
     @PostMapping("/{membershipId}/exit")

@@ -34,12 +34,9 @@ public class AdminController {
     // Client endpoints
     @PostMapping("/clients")
     public ResponseEntity<Client> createClient(@RequestBody ClientDto clientDto) {
-        try {
-            Client client = clientService.createClient(clientDto);
-            return ResponseEntity.status(HttpStatus.CREATED).body(client);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().build();
-        }
+        Client client = clientService.createClient(clientDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(client);
+
     }
 
     @GetMapping("/clients")
@@ -70,32 +67,23 @@ public class AdminController {
 
     @PutMapping("/clients/{id}")
     public ResponseEntity<Client> updateClient(@PathVariable UUID id, @RequestBody ClientDto clientDto) {
-        try {
-            Client client = clientService.updateClient(id, clientDto);
-            return ResponseEntity.ok(client);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
-        }
+        Client client = clientService.updateClient(id, clientDto);
+        return ResponseEntity.ok(client);
+
     }
 
     @PatchMapping("/clients/{id}/block")
     public ResponseEntity<Client> blockClient(@PathVariable UUID id) {
-        try {
-            Client client = clientService.toggleBlockStatus(id, true);
-            return ResponseEntity.ok(client);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
-        }
+        Client client = clientService.toggleBlockStatus(id, true);
+        return ResponseEntity.ok(client);
+
     }
 
     @PatchMapping("/clients/{id}/unblock")
     public ResponseEntity<Client> unblockClient(@PathVariable UUID id) {
-        try {
-            Client client = clientService.toggleBlockStatus(id, false);
-            return ResponseEntity.ok(client);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
-        }
+        Client client = clientService.toggleBlockStatus(id, false);
+        return ResponseEntity.ok(client);
+
     }
 
     @GetMapping("/clients/count")
@@ -107,12 +95,9 @@ public class AdminController {
     // Membership endpoints
     @PostMapping("/memberships")
     public ResponseEntity<Membership> createMembership(@RequestBody MembershipDto membershipDto) {
-        try {
-            Membership membership = membershipService.createMembership(membershipDto);
-            return ResponseEntity.status(HttpStatus.CREATED).body(membership);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().build();
-        }
+        Membership membership = membershipService.createMembership(membershipDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(membership);
+
     }
 
     @GetMapping("/memberships")
@@ -156,12 +141,9 @@ public class AdminController {
     @PostMapping("/access-rules")
     public ResponseEntity<AccessRule> createAccessRule(@RequestBody AccessRuleDto accessRuleDto,
                                                        @RequestParam UUID membershipId) {
-        try {
-            AccessRule accessRule = accessService.createAccessRule(accessRuleDto, membershipId);
-            return ResponseEntity.status(HttpStatus.CREATED).body(accessRule);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().build();
-        }
+        AccessRule accessRule = accessService.createAccessRule(accessRuleDto, membershipId);
+        return ResponseEntity.status(HttpStatus.CREATED).body(accessRule);
+
     }
 
     @GetMapping("/access-rules/membership/{membershipId}")
@@ -172,12 +154,9 @@ public class AdminController {
 
     @DeleteMapping("/access-rules/{id}")
     public ResponseEntity<Void> deleteAccessRule(@PathVariable UUID id) {
-        try {
-            accessService.deleteAccessRule(id);
-            return ResponseEntity.noContent().build();
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
-        }
+        accessService.deleteAccessRule(id);
+        return ResponseEntity.noContent().build();
+
     }
 
     // Visit endpoints
