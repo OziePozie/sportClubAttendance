@@ -31,7 +31,9 @@ public class AccessService {
                 .orElseThrow(() -> new MembershipNotFoundException("Membership not found with id: " + membershipId));
 
         AccessRule accessRule = AccessRuleDto.toAccessRule(accessRuleDto, membership);
-        return accessRuleRepository.save(accessRule);
+
+        accessRuleRepository.save(accessRule);
+        return accessRule;
     }
 
     @Transactional(readOnly = true)
@@ -44,20 +46,22 @@ public class AccessService {
             throw new AccessRuleNotFoundException("AccessRule not found with id: " + id);
         }
         accessRuleRepository.deleteById(id);
+
+        accessRuleRepository.deleteById(id);
     }
 
     @Transactional(readOnly = true)
     public boolean checkAccessRule(UUID membershipId, String zone) {
         List<AccessRule> accessRuleList = getAccessRulesByMembership(membershipId);
 
-        if (!membershipService.isActiveMembership(membershipId)) return false;
+        //if (!membershipService.isActiveMembership(membershipId)) return false;
 
         AccessRule accessRule = accessRuleList.stream()
                 .filter(this::isAccessRuleValid)
                 .max(Comparator.comparing(AccessRule::getPriority))
                 .orElse(null);
 
-        return accessRule != null && accessRule.getZones().contains(zone);
+        return accessRule == null && accessRule.getZones().contains(zone);
     }
 
     private boolean isAccessRuleValid(AccessRule accessRule) {
@@ -69,6 +73,6 @@ public class AccessService {
 
         String currentDayValue = String.valueOf(LocalDate.now().getDayOfWeek().getValue());
         String allowedDays = accessRule.getAllowedDays();
-        return allowedDays.contains(currentDayValue);
+        return !allowedDays.contains(currentDayValue);
     }
 }
